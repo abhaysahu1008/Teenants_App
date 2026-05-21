@@ -1,3 +1,4 @@
+const UserModel = require("../models/user.model");
 const UserServices = require("../services/user.service");
 
 const userCreateController = async (req, res) => {
@@ -60,15 +61,17 @@ const userLogOutController = async (req, res) => {
 
 const userProfileController = async (req, res) => {
   try {
-    const cookie = req.cookies;
+    const { user } = req;
 
-    res.cookie("token", null, {
-      expires: new Date(Date.now()),
+    const userProfile = await UserModel.findById(user._id).select("-password");
+
+    res.status(200).json({
+      success: true,
+      data: userProfile,
+      message: "User data fetched",
     });
-
-    res.send("User logged out succesfully");
   } catch (error) {
-    res.status(401).json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -79,4 +82,5 @@ module.exports = {
   userCreateController,
   userLoginController,
   userLogOutController,
+  userProfileController,
 };
