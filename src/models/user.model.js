@@ -47,6 +47,12 @@ const UserSchema = new mongoose.Schema(
       },
     },
 
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      required: true,
+    },
+
     preferences: {
       sleepTime: {
         type: String,
@@ -71,7 +77,7 @@ const UserSchema = new mongoose.Schema(
         default: "Point",
       },
       coordinates: {
-        type: [Number], // [lng, lat]
+        type: [Number],
         required: true,
       },
     },

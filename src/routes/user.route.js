@@ -3,13 +3,12 @@ const userRouter = express.Router();
 const userControllers = require("../controllers/user.controller");
 const AuthMiddleware = require("../middlewares/auth");
 
-userRouter.post("/api/signup", userControllers.userCreateController);
-userRouter.post("/api/login", userControllers.userLoginController);
-userRouter.post("/api/logout", userControllers.userLogOutController);
-userRouter.get(
-  "/api/me",
-  AuthMiddleware,
-  userControllers.userProfileController,
-);
+userRouter.get("/me", AuthMiddleware, userControllers.getCurrentUser);
+userRouter.patch("/me", AuthMiddleware, userControllers.updateUser);
+userRouter.delete("/me", AuthMiddleware);
+
+userRouter.get("/:userId", AuthMiddleware, userControllers.viewUser);
+userRouter.get("/:userId/properties", AuthMiddleware, userControllers.getUserProperties);
+userRouter.get("/:userId/applications", AuthMiddleware);
 
 module.exports = userRouter;
