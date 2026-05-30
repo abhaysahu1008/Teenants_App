@@ -1,10 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/db");
-const userAuthRoute = require("../src/routes/userAuth.route");
-const userRoute = require("../src/routes/user.route");
-const propertyRoute = require("../src/routes/property.route");
-const applicationRoute = require("../src/routes/application.route");
+const userAuthRoute = require("./routes/userAuth.route");
+const userRoute = require("./routes/user.route");
+const propertyRoute = require("./routes/property.route");
+const applicationRoute = require("./routes/application.route");
 const cookieParser = require("cookie-parser");
 const app = express();
 app.use(express.json());

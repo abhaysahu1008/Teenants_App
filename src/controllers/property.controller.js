@@ -41,7 +41,7 @@ const propertyCreateController = async (req, res) => {
       });
     }
 
-    const property = await PropertyModel.create({
+    const property = new PropertyModel({
       title,
       description,
       rent,
@@ -66,6 +66,9 @@ const propertyCreateController = async (req, res) => {
       maxTenants,
       images: images || [],
     });
+
+    await property.save();
+    console.log("Creating a property");
 
     res.status(201).json({
       success: true,
@@ -143,7 +146,7 @@ const searchPropertyController = async (req, res) => {
       filter["roommatePreferences.food"] = food;
     }
 
-    if (smoking !== undefined) {
+    if (smoking !== undefined && smoking !== "") {
       filter["roommatePreferences.smoking"] = smoking === "true";
     }
 
