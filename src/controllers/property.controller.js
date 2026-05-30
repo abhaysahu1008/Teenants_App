@@ -76,6 +76,7 @@ const propertyCreateController = async (req, res) => {
       data: property,
     });
   } catch (error) {
+    console.log("FULL ERROR:", error); // add this
     res.status(500).json({
       success: false,
       error: error.message,

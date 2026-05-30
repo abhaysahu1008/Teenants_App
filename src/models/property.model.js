@@ -148,15 +148,6 @@ PropertySchema.index({ rent: 1 });
 PropertySchema.index({ "location.city": 1 });
 PropertySchema.index({ amenities: 1 });
 
-PropertySchema.pre("save", function (next) {
-  if (this.title) this.title = this.title.trim();
-  if (this.description) this.description = this.description.trim();
-  if (this.location?.address)
-    this.location.address = this.location.address.trim();
-  if (this.location?.city) this.location.city = this.location.city.trim();
-  next();
-});
-
 const PropertyModel = mongoose.model("Property", PropertySchema);
 
 module.exports = PropertyModel;
