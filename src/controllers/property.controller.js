@@ -184,9 +184,41 @@ const searchPropertyController = async (req, res) => {
     });
   }
 };
+const nearbyPropertyController = async (req, res) => {
+  try {
+    const { longitude, latitude, distance } = req.query;
+
+    const properties = await PropertyModel.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [Number(longitude), Number(latitude)],
+          },
+
+          $maxDistance: Number(distance),
+        },
+      },
+
+      isAvailable: true,
+    }).populate("createdBy", "name email");
+
+    res.status(200).json({
+      success: true,
+      results: properties.length,
+      data: properties,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   propertyCreateController,
   propertyViewController,
   searchPropertyController,
+  nearbyPropertyController,
 };

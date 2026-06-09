@@ -16,6 +16,12 @@ propertyRouter.get(
 );
 
 propertyRouter.get(
+  "/nearby",
+  AuthMiddleware,
+  propertyController.nearbyPropertyController,
+);
+
+propertyRouter.get(
   "/:propertyId",
   AuthMiddleware,
   propertyController.propertyViewController,
