@@ -9,4 +9,34 @@ applicationRouter.post(
   ApplicationController.CreateApplicationController,
 );
 
+applicationRouter.get(
+  "/me",
+  AuthMiddleware,
+  ApplicationController.MyApplicationController,
+);
+
+applicationRouter.get(
+  "/property/:propertyId",
+  AuthMiddleware,
+  ApplicationController.AllApplicationsController,
+);
+
+applicationRouter.patch(
+  "/:applicationId/accept",
+  AuthMiddleware,
+  ApplicationController.AcceptApplicationsController,
+);
+
+applicationRouter.patch(
+  "/:applicationId/reject",
+  AuthMiddleware,
+  ApplicationController.RejectApplicationsController,
+);
+
+applicationRouter.patch(
+  "/:applicationId",
+  AuthMiddleware,
+  ApplicationController.DeleteApplicationsController,
+);
+
 module.exports = applicationRouter;
