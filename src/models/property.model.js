@@ -56,6 +56,7 @@ const PropertySchema = new mongoose.Schema(
         "gym",
         "fridge",
         "kitchen",
+        "water-purifier",
         "power-backup",
       ],
       default: [],

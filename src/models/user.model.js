@@ -69,6 +69,22 @@ const UserSchema = new mongoose.Schema(
         required: true,
       },
     },
+    preferredAmenities: [
+      {
+        type: String,
+        enum: [
+          "wifi",
+          "ac",
+          "parking",
+          "laundry",
+          "gym",
+          "fridge",
+          "water-purifier",
+          "kitchen",
+          "power-backup",
+        ],
+      },
+    ],
 
     location: {
       type: {
@@ -76,8 +92,11 @@ const UserSchema = new mongoose.Schema(
         enum: ["Point"],
         default: "Point",
       },
-      coordinates: {
-        type: [Number],
+
+      coordinates: [Number],
+
+      city: {
+        type: String,
         required: true,
       },
     },
