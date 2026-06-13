@@ -10,15 +10,21 @@ propertyRouter.post(
 );
 
 propertyRouter.get(
-  "/search",
+  "/filters",
   AuthMiddleware,
-  propertyController.searchPropertyController,
+  propertyController.getFilteredPropertiesController,
 );
 
 propertyRouter.get(
   "/nearby",
   AuthMiddleware,
   propertyController.nearbyPropertyController,
+);
+
+propertyRouter.get(
+  "/search",
+  AuthMiddleware,
+  propertyController.searchPropertyController,
 );
 
 propertyRouter.get(

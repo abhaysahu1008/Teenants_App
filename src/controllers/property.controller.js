@@ -110,7 +110,7 @@ const propertyViewController = async (req, res) => {
   }
 };
 
-const searchPropertyController = async (req, res) => {
+const getFilteredPropertiesController = async (req, res) => {
   try {
     const {
       city,
@@ -216,9 +216,45 @@ const nearbyPropertyController = async (req, res) => {
   }
 };
 
+const searchPropertyController = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    const properties = await PropertyModel.find({
+      $or: [
+        {
+          title: {
+            $regex: query,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: query,
+            $options: "i",
+          },
+        },
+      ],
+      isAvailable: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      results: properties.length,
+      data: properties,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   propertyCreateController,
   propertyViewController,
-  searchPropertyController,
+  getFilteredPropertiesController,
   nearbyPropertyController,
+  searchPropertyController,
 };
