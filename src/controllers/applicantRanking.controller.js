@@ -1,5 +1,6 @@
 const PropertyModel = require("../models/property.model");
 const calculateScore = require("../utils/matchScore");
+const ApplicationModel = require("../models/application.model");
 
 const getApplicantsRank = async (req, res) => {
   const { propertyId } = req.params;
@@ -15,7 +16,7 @@ const getApplicantsRank = async (req, res) => {
 
     return {
       applicationId: app._id,
-      applicant: applications.applicant,
+      applicant: app.applicant,
       matchScore: score,
     };
   });

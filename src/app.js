@@ -5,7 +5,8 @@ const userAuthRoute = require("./routes/userAuth.route");
 const userRoute = require("./routes/user.route");
 const propertyRoute = require("./routes/property.route");
 const applicationRoute = require("./routes/application.route");
-const matchRoute = require("./routes/match.route");
+const propertyRankingRoute = require("./routes/propertyRanking.route");
+const applicantRankingRoute = require("./routes/applicantRanking.route");
 
 const cookieParser = require("cookie-parser");
 const app = express();
@@ -16,7 +17,8 @@ app.use("/api/auth", userAuthRoute);
 app.use("/api/users", userRoute);
 app.use("/api/properties", propertyRoute);
 app.use("/api/applications", applicationRoute);
-app.use("/api/matches", matchRoute);
+app.use("/api/matches", propertyRankingRoute);
+app.use("/api/matches", applicantRankingRoute);
 
 const startServer = async () => {
   try {

@@ -34,7 +34,6 @@ const getBestProperties = async (req, res) => {
         score += 20;
       }
 
-      // Amenities (20)
       const preferredAmenities = user.preferredAmenities || [];
 
       const matchingAmenities = property.amenities.filter((amenity) =>

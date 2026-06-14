@@ -175,14 +175,14 @@ const RejectApplicationsController = async (req, res) => {
       });
     }
 
-    if (!application.status !== "pending") {
+    if (application.status !== "pending") {
       return res.status(400).json({
         message: "Application already processed!",
         success: false,
       });
     }
 
-    application.status = "accepted";
+    application.status = "rejected";
     await application.save();
 
     res.status(200).json({

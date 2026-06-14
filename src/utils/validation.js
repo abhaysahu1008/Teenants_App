@@ -9,6 +9,8 @@ const UserUpdateValidation = (req) => {
     "preferences.sleepTime",
     "preferences.smoking",
     "location.coordinates",
+    "location.city", // ✅ ADDED
+    "preferredAmenities", // ✅ ADDED
   ];
 
   const isEditedAllowed = Object.keys(req.body).every((field) => {

@@ -1,3 +1,4 @@
+const ApplicationModel = require("../models/application.model");
 const PropertyModel = require("../models/property.model");
 const UserModel = require("../models/user.model");
 const UserUpdateValidation = require("../utils/validation");
@@ -30,7 +31,7 @@ const updateUser = async (req, res) => {
       });
     }
 
-    const loggedInUser = req.user;
+    const loggedInUser = await UserModel.findById(req.user._id);
 
     Object.keys(req.body).forEach((key) =>
       loggedInUser.set(key, req.body[key]),
@@ -94,4 +95,29 @@ const getUserProperties = async (req, res) => {
   }
 };
 
-module.exports = { getCurrentUser, updateUser, viewUser, getUserProperties };
+const getUserApplication = async (req, res) => {
+  try {
+    const UserApplications = await ApplicationModel.find({
+      applicant: req.user._id,
+    }).populate("property");
+
+    res.status(200).json({
+      message: "User Applications",
+      success: true,
+      applications: UserApplications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      success: false,
+    });
+  }
+};
+
+module.exports = {
+  getCurrentUser,
+  updateUser,
+  viewUser,
+  getUserProperties,
+  getUserApplication,
+};

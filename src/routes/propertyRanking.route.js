@@ -1,12 +1,12 @@
 const express = require("express");
 const AuthMiddleware = require("../middlewares/auth");
-const propertyMatchRouter = express.Router();
+const propertyRankingRouter = express.Router();
 const propertyRankingController = require("../controllers/propertyRanking.controller");
 
-matchRouter.get(
-  "/properties",
+propertyRankingRouter.get(
+  "/propertyRanking",
   AuthMiddleware,
   propertyRankingController.getBestProperties,
 );
 
-module.exports = propertyMatchRouter;
+module.exports = propertyRankingRouter;

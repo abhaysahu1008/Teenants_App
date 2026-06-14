@@ -16,30 +16,29 @@ const userCreateService = async (data) => {
       food,
       longitude,
       latitude,
+      city, // ✅ ADDED
+      preferredAmenities, // ✅ ADDED (optional)
     } = data;
+
+    // ✅ ADDED validation
+    if (budgetMin >= budgetMax) {
+      throw new Error("budgetMin must be less than budgetMax");
+    }
 
     const hashPassword = await bcrypt.hash(password, 10);
 
     const user = await UserModel.create({
-      name: {
-        firstName,
-        lastName,
-      },
+      name: { firstName, lastName },
       email,
       password: hashPassword,
-      budget: {
-        min: budgetMin,
-        max: budgetMax,
-      },
+      budget: { min: budgetMin, max: budgetMax },
       gender,
-      preferences: {
-        sleepTime,
-        smoking,
-        food,
-      },
+      preferences: { sleepTime, smoking, food },
+      preferredAmenities: preferredAmenities || [], // ✅ ADDED
       location: {
         type: "Point",
         coordinates: [longitude, latitude],
+        city, // ✅ ADDED
       },
     });
 
