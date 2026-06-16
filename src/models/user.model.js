@@ -86,6 +86,12 @@ const UserSchema = new mongoose.Schema(
       },
     ],
 
+    bio: {
+      type: String,
+      maxlength: 1000,
+      default: "",
+    },
+
     location: {
       type: { type: String, enum: ["Point"], default: "Point" },
       coordinates: {

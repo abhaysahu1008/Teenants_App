@@ -7,6 +7,7 @@ const propertyRoute = require("./routes/property.route");
 const applicationRoute = require("./routes/application.route");
 const propertyRankingRoute = require("./routes/propertyRanking.route");
 const applicantRankingRoute = require("./routes/applicantRanking.route");
+const aiAnalysisRoute = require("./routes/aiAnalysis.route");
 
 const cookieParser = require("cookie-parser");
 const app = express();
@@ -19,6 +20,7 @@ app.use("/api/properties", propertyRoute);
 app.use("/api/applications", applicationRoute);
 app.use("/api/matches", propertyRankingRoute);
 app.use("/api/matches", applicantRankingRoute);
+app.use("/api", aiAnalysisRoute);
 
 const startServer = async () => {
   try {
