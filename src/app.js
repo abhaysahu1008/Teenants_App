@@ -22,7 +22,10 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] },
+  cors: {
+    origin: "https://tenants-frontend.onrender.com/",
+    methods: ["GET", "POST"],
+  },
 });
 
 const connectedUsers = new Map();
@@ -104,7 +107,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://tenants-frontend.onrender.com/",
     credentials: true,
   }),
 );
