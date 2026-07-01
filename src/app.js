@@ -23,7 +23,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://tenants-frontend.onrender.com/",
+    origin: "https://tenants-frontend.netlify.app/",
     methods: ["GET", "POST"],
   },
 });
@@ -108,7 +108,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
-      "https://tenants-frontend.onrender.com/",
+      "https://tenants-frontend.netlify.app/",
       "http://localhost:5173",
       "http://localhost:3000",
     ],
