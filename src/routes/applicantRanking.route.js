@@ -5,7 +5,7 @@ const applicantRankRouter = express.Router();
 const applicantRankController = require("../controllers/applicantRanking.controller");
 
 applicantRankRouter.get(
-  "/applicantRanking",
+  "/:propertyId/applicantRanking",
   AuthMiddleware,
   applicantRankController.getApplicantsRank,
 );

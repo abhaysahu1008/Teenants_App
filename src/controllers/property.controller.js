@@ -88,7 +88,9 @@ const propertyViewController = async (req, res) => {
   try {
     const { propertyId } = req.params;
 
-    const propertyFound = await PropertyModel.findById(propertyId);
+    const propertyFound = await PropertyModel.findById(propertyId)
+      .populate("createdBy", "name email")
+      .populate("tenants", "name");
 
     if (!propertyFound) {
       return res.status(404).json({

@@ -51,6 +51,7 @@ const userCreateService = async (data) => {
 const userLoginService = async (data) => {
   const { email, password } = data;
   const user = await UserModel.findOne({ email });
+  console.log(user);
 
   if (!user) {
     throw new Error("Invalid credentials");
@@ -60,6 +61,7 @@ const userLoginService = async (data) => {
   if (!validPassword) {
     throw new Error("Invalid credentials");
   }
+  console.log(validPassword);
 
   return user;
 };

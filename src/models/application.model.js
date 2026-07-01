@@ -26,6 +26,14 @@ const applicationSchema = new mongoose.Schema(
       required: true,
       default: "pending",
     },
+
+    aiAnalysis: {
+      score: Number,
+      pros: [String],
+      conflicts: [String],
+      summary: String,
+      analyzedAt: Date,
+    },
   },
   { timestamps: true },
 );

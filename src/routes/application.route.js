@@ -21,8 +21,6 @@ applicationRouter.get(
   ApplicationController.AllApplicationsController,
 );
 
-applicationRouter.get("/:applicationId/match-analysis", AuthMiddleware);
-
 applicationRouter.patch(
   "/:applicationId/accept",
   AuthMiddleware,
