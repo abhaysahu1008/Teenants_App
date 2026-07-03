@@ -7,16 +7,21 @@ const getConversationsController = async (req, res) => {
     const conversations = await ChatMessageModel.aggregate([
       {
         $match: {
-          $or: [{ sender: userId }, { receiver: userId }],
+          $or: [
+            { sender: new mongoose.Types.ObjectId(userId) },
+            { receiver: new mongoose.Types.ObjectId(userId) },
+          ],
         },
       },
-      {
-        $sort: { createdAt: -1 },
-      },
+      { $sort: { createdAt: -1 } },
       {
         $group: {
           _id: {
-            $cond: [{ $eq: ["$sender", userId] }, "$receiver", "$sender"],
+            $cond: [
+              { $eq: ["$sender", new mongoose.Types.ObjectId(userId)] },
+              "$receiver",
+              "$sender",
+            ],
           },
           lastMessage: { $first: "$text" },
           lastMessageAt: { $first: "$createdAt" },
@@ -25,7 +30,7 @@ const getConversationsController = async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $eq: ["$receiver", userId] },
+                    { $eq: ["$receiver", new mongoose.Types.ObjectId(userId)] },
                     { $eq: ["$read", false] },
                   ],
                 },
@@ -34,21 +39,33 @@ const getConversationsController = async (req, res) => {
               ],
             },
           },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "participant",
+        },
+      },
+      { $unwind: "$participant" },
+      {
+        $project: {
+          _id: 1,
+          lastMessage: 1,
+          lastMessageAt: 1,
+          unreadCount: 1,
           participant: {
-            $first: {
-              $cond: [{ $eq: ["$sender", userId] }, "$receiver", "$sender"],
-            },
+            _id: "$participant._id",
+            name: "$participant.name",
+            email: "$participant.email",
           },
         },
       },
     ]);
 
-    const populated = await ChatMessageModel.populate(conversations, {
-      path: "participant",
-      select: "name email",
-    });
-
-    res.status(200).json({ success: true, data: populated });
+    res.status(200).json({ success: true, data: conversations });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
