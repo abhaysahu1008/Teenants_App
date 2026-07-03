@@ -19,11 +19,20 @@ const ChatMessageModel = require("./models/chat.model");
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "https://tenants-frontend.netlify.app",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://tenants-frontend.netlify.app/",
+    origin: "https://tenants-frontend.netlify.app",
     methods: ["GET", "POST"],
   },
 });
@@ -104,15 +113,6 @@ io.on("connection", (socket) => {
 
 app.use(express.json());
 app.use(cookieParser());
-
-app.use(
-  cors({
-    origin: "https://tenants-frontend.netlify.app",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
 
 app.use("/api/auth", userAuthRoute);
 app.use("/api/users", userRoute);
