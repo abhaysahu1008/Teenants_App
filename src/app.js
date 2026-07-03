@@ -21,7 +21,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://tenants-frontend.netlify.app",
+    origin: ["https://tenants-frontend.netlify.app", "http://localhost:5173"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -32,7 +32,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://tenants-frontend.netlify.app",
+    origin: ["https://tenants-frontend.netlify.app", "http://localhost:5173"],
     methods: ["GET", "POST"],
   },
 });
@@ -41,9 +41,7 @@ const connectedUsers = new Map();
 
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
-  if (!token) {
-    return next(new Error("Authentication error"));
-  }
+  if (!token) return next(new Error("Authentication error"));
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
@@ -55,20 +53,26 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
+  console.log("User connected:", socket.userId);
   connectedUsers.set(socket.userId, socket.id);
   socket.join(`user:${socket.userId}`);
 
   socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.userId);
     connectedUsers.delete(socket.userId);
   });
 
-  socket.on("join_room", ({ roomId }) => {
-    if (!roomId) return;
+  // FIX: When user starts chatting with someone, join the chat room
+  socket.on("join_chat", ({ otherUserId }) => {
+    if (!otherUserId) return;
+    const roomId = `chat:${[socket.userId.toString(), otherUserId.toString()].sort().join(":")}`;
     socket.join(roomId);
+    console.log(`User ${socket.userId} joined room ${roomId}`);
   });
 
-  socket.on("leave_room", ({ roomId }) => {
-    if (!roomId) return;
+  socket.on("leave_chat", ({ otherUserId }) => {
+    if (!otherUserId) return;
+    const roomId = `chat:${[socket.userId.toString(), otherUserId.toString()].sort().join(":")}`;
     socket.leave(roomId);
   });
 
@@ -95,17 +99,19 @@ io.on("connection", (socket) => {
         updatedAt: message.updatedAt,
       };
 
+      // Create room and add both users
       const roomId = `chat:${[socket.userId.toString(), receiverId.toString()].sort().join(":")}`;
-      const socketsInRoom = await io.in(roomId).allSockets();
 
-      if (socketsInRoom.size > 0) {
-        io.to(roomId).emit("receive_message", payload);
-      } else {
-        io.to(`user:${receiverId.toString()}`).emit("receive_message", payload);
-      }
+      // Emit to the chat room (both sender and receiver if they're in it)
+      io.to(roomId).emit("receive_message", payload);
 
+      // Also emit to receiver's personal room as fallback
+      io.to(`user:${receiverId.toString()}`).emit("receive_message", payload);
+
+      // Confirm to sender
       socket.emit("message_sent", payload);
     } catch (error) {
+      console.error("Socket send_message error:", error);
       socket.emit("message_error", { message: error.message });
     }
   });
@@ -118,7 +124,6 @@ app.use("/api/auth", userAuthRoute);
 app.use("/api/users", userRoute);
 app.use("/api/properties", propertyRoute);
 app.use("/api/applications", applicationRoute);
-
 app.use("/api/matches/properties", propertyRankingRoute);
 app.use("/api/matches/applicants", applicantRankingRoute);
 app.use("/api/matches/applications", aiAnalysisRoute);
