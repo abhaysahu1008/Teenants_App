@@ -19,9 +19,14 @@ const ChatMessageModel = require("./models/chat.model");
 
 const app = express();
 
+const allowedOrigins = [
+  "https://tenants-frontend.netlify.app",
+  "http://tenants-frontend.netlify.app",
+];
+
 app.use(
   cors({
-    origin: "https://tenants-frontend.netlify.app",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -32,10 +37,12 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://tenants-frontend.netlify.app",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
+    allowEIO3: true,
   },
+  transports: ["websocket", "polling"],
 });
 
 const connectedUsers = new Map();
@@ -43,20 +50,23 @@ const connectedUsers = new Map();
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) {
+    console.log("No token provided");
     return next(new Error("Authentication error"));
   }
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
     socket.userId = payload.id;
+    console.log("Socket authenticated for user:", socket.userId);
     next();
   } catch (err) {
+    console.log("Token verification failed:", err.message);
     next(new Error("Invalid token"));
   }
 });
 
 io.on("connection", (socket) => {
-  console.log(`User ${socket.userId} connected`);
+  console.log(`User ${socket.userId} connected with socket ID: ${socket.id}`);
   connectedUsers.set(socket.userId, socket.id);
   socket.join(`user:${socket.userId}`);
 
@@ -68,15 +78,21 @@ io.on("connection", (socket) => {
   socket.on("join_room", ({ roomId }) => {
     if (!roomId) return;
     socket.join(roomId);
+    console.log(`User ${socket.userId} joined room ${roomId}`);
   });
 
   socket.on("leave_room", ({ roomId }) => {
     if (!roomId) return;
     socket.leave(roomId);
+    console.log(`User ${socket.userId} left room ${roomId}`);
   });
 
   socket.on("send_message", async ({ receiverId, text }) => {
-    if (!receiverId || !text) return;
+    console.log(`Message from ${socket.userId} to ${receiverId}: ${text}`);
+    if (!receiverId || !text) {
+      socket.emit("message_error", { message: "Invalid message or receiver" });
+      return;
+    }
 
     try {
       const message = await ChatMessageModel.create({
@@ -101,12 +117,16 @@ io.on("connection", (socket) => {
       const roomId = `chat:${[socket.userId.toString(), receiverId.toString()].sort().join(":")}`;
       const socketsInRoom = await io.in(roomId).allSockets();
 
+      // Send to both users in the chat
       if (socketsInRoom.size > 0) {
         io.to(roomId).emit("receive_message", payload);
+        console.log(`Message sent to room: ${roomId}`);
       } else {
         io.to(`user:${receiverId.toString()}`).emit("receive_message", payload);
+        console.log(`Message sent to user: ${receiverId}`);
       }
 
+      // Confirm to sender
       socket.emit("message_delivered", payload);
     } catch (error) {
       console.error("Message error:", error);
@@ -135,6 +155,7 @@ const startServer = async () => {
     await connectDB();
     server.listen(PORT, () => {
       console.log(`Server started successfully on port ${PORT}`);
+      console.log(`Socket.IO listening for connections from: ${allowedOrigins.join(", ")}`);
     });
   } catch (error) {
     console.error("Database connection failed:", error.message);
