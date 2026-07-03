@@ -34,6 +34,7 @@ const io = new Server(server, {
   cors: {
     origin: "https://tenants-frontend.netlify.app",
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
@@ -55,10 +56,12 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
+  console.log(`User ${socket.userId} connected`);
   connectedUsers.set(socket.userId, socket.id);
   socket.join(`user:${socket.userId}`);
 
   socket.on("disconnect", () => {
+    console.log(`User ${socket.userId} disconnected`);
     connectedUsers.delete(socket.userId);
   });
 
@@ -104,8 +107,9 @@ io.on("connection", (socket) => {
         io.to(`user:${receiverId.toString()}`).emit("receive_message", payload);
       }
 
-      socket.emit("message_sent", payload);
+      socket.emit("message_delivered", payload);
     } catch (error) {
+      console.error("Message error:", error);
       socket.emit("message_error", { message: error.message });
     }
   });
