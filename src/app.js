@@ -22,7 +22,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://tenants-frontend.netlify.app",
+      "https://peaceful-froyo-2be85a.netlify.app",
       "http://localhost:5173",
       "https://teenants.site",
       "https://www.teenants.site",
@@ -38,10 +38,10 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      "https://tenants-frontend.netlify.app",
       "http://localhost:5173",
       "https://teenants.site",
       "https://www.teenants.site",
+      "https://peaceful-froyo-2be85a.netlify.app/",
     ],
     credentials: true,
     methods: ["GET", "POST"],
