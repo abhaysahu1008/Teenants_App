@@ -18,6 +18,7 @@ const userCreateController = async (req, res) => {
 };
 
 const userLoginController = async (req, res) => {
+  console.log("inside login controler ");
   try {
     const user = await UserAuthServices.userLoginService(req.body);
     const token = user.generateToken();

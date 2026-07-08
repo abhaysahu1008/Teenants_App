@@ -1,107 +1,102 @@
-const ChatMessageModel = require("../models/chat.model");
+const ChatModel = require("../models/chat.model");
+const UserModel = require("../models/user.model");
+const MessageModel = require("../models/message.model");
 
-const getConversationsController = async (req, res) => {
+const createChatController = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const { receiverId } = req.params;
 
-    const conversations = await ChatMessageModel.aggregate([
-      {
-        $match: {
-          $or: [
-            { sender: new mongoose.Types.ObjectId(userId) },
-            { receiver: new mongoose.Types.ObjectId(userId) },
-          ],
-        },
-      },
-      { $sort: { createdAt: -1 } },
-      {
-        $group: {
-          _id: {
-            $cond: [
-              { $eq: ["$sender", new mongoose.Types.ObjectId(userId)] },
-              "$receiver",
-              "$sender",
-            ],
-          },
-          lastMessage: { $first: "$text" },
-          lastMessageAt: { $first: "$createdAt" },
-          unreadCount: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $eq: ["$receiver", new mongoose.Types.ObjectId(userId)] },
-                    { $eq: ["$read", false] },
-                  ],
-                },
-                1,
-                0,
-              ],
-            },
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "_id",
-          foreignField: "_id",
-          as: "participant",
-        },
-      },
-      { $unwind: "$participant" },
-      {
-        $project: {
-          _id: 1,
-          lastMessage: 1,
-          lastMessageAt: 1,
-          unreadCount: 1,
-          participant: {
-            _id: "$participant._id",
-            name: "$participant.name",
-            email: "$participant.email",
-          },
-        },
-      },
-    ]);
+    if (receiverId === req.user._id.toString()) {
+      return res.status(400).json({
+        message: "You cannot create a chat with yourself.",
+      });
+    }
 
-    res.status(200).json({ success: true, data: conversations });
+    const existingChat = await ChatModel.findOne({
+      participants: {
+        $all: [req.user._id, receiverId],
+      },
+    });
+
+    if (existingChat) {
+      return res.status(200).json(existingChat);
+    }
+
+    const receiver = await UserModel.findById(receiverId);
+
+    if (!receiver) {
+      return res.status(404).json({
+        message: "Receiver not found",
+      });
+    }
+
+    const newChat = await ChatModel.create({
+      participants: [req.user._id, receiverId],
+    });
+
+    res.status(201).json(newChat);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+const getAllChatsController = async (req, res) => {
+  try {
+    const chats = await ChatModel.find({
+      participants: req.user._id,
+    })
+      .populate("participants", "-password")
+      .populate("lastMessage")
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json(chats);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
 const getMessagesController = async (req, res) => {
   try {
-    const userId = req.user._id;
-    const { chatUserId } = req.params;
+    const { chatId } = req.params;
 
-    const messages = await ChatMessageModel.find({
-      $or: [
-        { sender: userId, receiver: chatUserId },
-        { sender: chatUserId, receiver: userId },
-      ],
-    })
-      .sort({ createdAt: 1 })
-      .populate("sender", "name email")
-      .populate("receiver", "name email");
+    const chat = await ChatModel.findById(chatId);
 
-    await ChatMessageModel.updateMany(
-      {
-        sender: chatUserId,
-        receiver: userId,
-        read: false,
-      },
-      { $set: { read: true } },
+    if (!chat) {
+      return res.status(404).json({
+        message: "Chat not found",
+      });
+    }
+
+    const isParticipant = chat.participants.some(
+      (participant) => participant.toString() === req.user._id.toString(),
     );
 
-    res.status(200).json({ success: true, data: messages });
+    if (!isParticipant) {
+      return res.status(403).json({
+        message: "Access denied",
+      });
+    }
+
+    const messages = await MessageModel.find({
+      chat: chatId,
+    })
+      .populate("sender", "name email")
+      .sort({ createdAt: 1 });
+
+    res.status(200).json(messages);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
 module.exports = {
-  getConversationsController,
+  createChatController,
+  getAllChatsController,
   getMessagesController,
 };
